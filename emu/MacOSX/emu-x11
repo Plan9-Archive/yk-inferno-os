@@ -14,9 +14,9 @@ dev
 	cmd	cmd
 	indir
 
-		draw win-cocoa-objc
-		pointer
-		snarf
+	draw	win-x11a
+	pointer
+	snarf
 
 	ip	ipif-posix ipaux
 	eia
@@ -24,17 +24,19 @@ dev
 	mem
 
 env
-	SYSLIBS=	$SYSLIBS -framework Cocoa
+	CFLAGS=	$CFLAGS -I/usr/X11R6/include
+	LDFLAGS=	$LDFLAGS -L/usr/X11R6/lib
+	SYSLIBS=	$SYSLIBS -lX11 -lXext
 
 lib
 	interp
-		tk
-		freetype
+	tk
+	freetype
 	math
-		draw
+	draw
 
-		memlayer
-		memdraw
+	memlayer
+	memdraw
 	keyring
 	sec
 	mp
@@ -45,16 +47,16 @@ link
 
 mod
 	sys
-		draw
+	draw
 
-		tk
+	tk
 	math
 	srv	srv
 	keyring
 	crypt
 	ipints
 	loader
-		freetype
+	freetype
 
 port
 	alloc
@@ -73,7 +75,7 @@ port
 	exportfs
 	inferno
 	latin1
-	main	os-cocoa-objc
+	main	os
 	parse
 	pgrp
 	print
@@ -86,8 +88,6 @@ port
 code
 	int	dontcompile = 1;
 	int macjit = 1;
-#		void setpointer(int x, int y){USED(x); USED(y);}
-#		ulong strtochan(char *s){USED(s); return ~0;}
 
 init
 	emuinit
