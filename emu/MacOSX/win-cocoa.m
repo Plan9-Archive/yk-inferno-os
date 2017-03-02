@@ -47,6 +47,7 @@ attachscreen(Rectangle *screenr, ulong *chan, int *depth, int *width, int *softs
 	r = [NSWindow contentRectForFrameRect:r styleMask:wstyle];
 
 	win = [[Appwin alloc] initWithContentRect:r styleMask:wstyle backing:NSBackingStoreBuffered defer:NO];
+	[win setTitle:@"emu"];
 	[win center];
 	[win setMinSize:NSMakeSize(160,100)];
 	[win setPreservesContentDuringLiveResize:YES];
@@ -61,7 +62,7 @@ attachscreen(Rectangle *screenr, ulong *chan, int *depth, int *width, int *softs
 	xsz = r.size.width;
 	ysz = r.size.height;
 
-	gscreen = allocmemimage(Rect(0,0,xsz,ysz), XRGB32);
+	gscreen = allocmemimage(Rect(0,0,xsz,ysz), XBGR32);
 	if(gscreen == nil)
 		return nil;
 	bits = [[NSBitmapImageRep alloc]
@@ -77,9 +78,6 @@ attachscreen(Rectangle *screenr, ulong *chan, int *depth, int *width, int *softs
 				bitsPerPixel:gscreen->depth];
 	gscreen->data->allocd = 0;	/* export into bits */
 
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-	[NSApp activateIgnoringOtherApps:YES];
-
 DBG	NSLog(@"attachscreen %d %d %d×%d",
 		gscreen->r.min.x, gscreen->r.min.y, Dx(gscreen->r), Dy(gscreen->r));
 
@@ -88,6 +86,12 @@ DBG	NSLog(@"attachscreen %d %d %d×%d",
 	*depth = gscreen->depth;
 	*width = gscreen->width;
 	*softscreen = 1;
+
+//	[view setHidden:NO];
+//	[win performSelectorOnMainThread:@selector(makeKeyAndOrderFront:) withObject:nil waitUntilDone:NO];
+	[win makeKeyAndOrderFront:nil];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp activateIgnoringOtherApps:YES];
 
 	return gscreen->data->bdata;
 }
@@ -129,19 +133,15 @@ drawcursor(Drawcursor* c)
 }
 
 @implementation Appwin
+- (BOOL)canBecomeKeyWindow	{ return YES; }
 @end
 
 @implementation Contentview
-- (BOOL)isFlipped
-{
-	return YES;	/* to make the content's origin top left */
-}
 
 - (void)drawRect:(NSRect)r
 {
 	CGContextRef gc;
 	CGImageRef i;
-	NSRect sr;
 
 DBG	NSLog(@"drawRect %.0f %.0f %.0f %.0f", r.origin.x, r.origin.y, r.size.width, r.size.height);
 
@@ -152,26 +152,13 @@ DBG		NSLog(@"can't draw", r.size.width, r.size.height);
 
 	i = CGImageCreateWithImageInRect([bits CGImage], NSRectToCGRect(r));
 	gc = [[win graphicsContext] graphicsPort];
-	sr = [self convertRect:r fromView:nil];
 
 	CGContextSaveGState(gc);
-//	if(op == NSCompositeSourceIn)
-//		CGContextSetBlendMode(gc, kCGBlendModeSourceIn);
-	CGContextTranslateCTM(gc, 0, [bits size].height);
-	CGContextScaleCTM(gc, 1, -1);
-	CGContextDrawImage(gc, NSRectToCGRect(sr), i);
+	CGContextDrawImage(gc, NSRectToCGRect(r), i);
 	CGContextRestoreGState(gc);
 	CGContextFlush(gc);
-
 	CGImageRelease(i);
 	[self unlockFocus];
 }
 @end
 
-/*
-See these:
-win.c
-/Users/yarik/plan9/src/cmd/devdraw/cocoa-screen.m
-/Users/yarik/src/drawterm-cocoa/gui-osx-cocoa/main-cocoa.m
-/Users/yarik/src/drawterm-cocoa/gui-osx-cocoa/screen.m
-*/

@@ -429,8 +429,8 @@ getnobody()
 	}
 }
 
-void
-libinit(char *imod)
+static void
+_libinit(char *imod)
 {
 	struct passwd *pw;
 	Proc *p;
@@ -442,11 +442,6 @@ libinit(char *imod)
 	gethostname(sys, sizeof(sys));
 	kstrdup(&ossysname, sys);
 	getnobody();
-
-	appsink = [[Appsink alloc] init];		/* or simply [Appsink new] */
-	[NSApplication sharedApplication];
-	[NSApp setDelegate:appsink];
-	[[Dummythread new] start];	/* to setup the Foundation for multi-threading */
 
 	if(dflag == 0)
 		termset();
@@ -471,6 +466,22 @@ libinit(char *imod)
 
 	emuinit(imod);
 }
+
+static char* initimod;
+
+void
+libinit(char *imod)
+{
+	initimod = imod;
+	appsink = [[Appsink alloc] init];		/* or simply [Appsink new] */
+	[NSApplication sharedApplication];
+	[NSApp setDelegate:appsink];
+	[[Dummythread new] start];	/* to setup the Foundation for multi-threading */
+//	[NSApp run];
+//	cleanexit(0);
+	_libinit(imod);
+}
+
 
 int
 readkbd(void)
@@ -561,10 +572,9 @@ ospause(void)
 {
 	[NSApp run];
 	cleanexit(0);
-	// not reached
-	for(;;){
-		pause();
-	}
+//	for(;;){
+//		pause();
+//	}
 }
 
 void
@@ -600,9 +610,14 @@ sbrk(int size)
 - (void)applicationDidFinishLaunching:(id)arg
 {
 	[[NSProcessInfo processInfo] enableSuddenTermination];
+//	_libinit(initimod);
 }
 - (void)applicationWillTerminate:(NSNotification *)note
 {
 	/* drop this */
+}
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(id)arg
+{
+	return YES;
 }
 @end
