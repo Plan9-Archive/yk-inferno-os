@@ -1,5 +1,5 @@
 FROM i386/gcc:6.1
-COPY * /usr/inferno/
+COPY . /usr/inferno/
 ENV PATH=$PATH:/usr/inferno/Linux/386/bin
 WORKDIR /usr/inferno
 RUN \
