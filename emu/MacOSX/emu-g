@@ -56,7 +56,7 @@ port
 	exportfs
 	inferno
 	latin1
-	main
+	main	os
 	parse
 	pgrp
 	print

@@ -6,7 +6,7 @@ SYSTARG=MacOSX
 
 CONF=emu			#default configuration
 CONFLIST=emu
-CLEANCONFLIST=
+CLEANCONFLIST=emu emu-g emu-carbon emu-x11
 
 INSTALLDIR=$ROOT/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is installed
 
@@ -14,11 +14,10 @@ INSTALLDIR=$ROOT/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is instal
 
 <$ROOT/mkfiles/mkfile-$SYSTARG-$OBJTYPE	#set vars based on target system
 
-<| $SHELLNAME ../port/mkdevlist $CONF	#sets $IP, $DEVS, $PORT, $LIBS
+<| $SHELLNAME ../port/mkdevlist $CONF	#sets $IP, $DEVS, $PORT, $LIBS, etc
 
 OBJ=\
 	asm-$OBJTYPE.$O\
-	os.$O\
 	$CONF.root.$O\
 	lock.$O\
 	$DEVS\
@@ -37,10 +36,10 @@ KERNDATE=`{$NDATE}
 
 SYSLIBS= \
 	-lm\
-	-framework Carbon -framework QuickTime\
 	-lpthread\
 	-framework CoreFoundation\
 	-framework IOKit\
+	$SYSLIBS
 
 default:V:	$O.$CONF
 
@@ -54,3 +53,6 @@ install:V: $O.$CONF
 	cp $O.$CONF $INSTALLDIR/$CONF
 
 devfs.c:N:	../port/devfs-posix.c
+
+%-objc.$O: %.m
+	$CC $CFLAGS -o $target $stem.m

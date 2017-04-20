@@ -1,0 +1,8 @@
+See these:
+	win.c
+	p9p-cocoa-screen.m 
+	drawterm-main.m
+	drawterm-screen.m
+
+mk &&
+./o.emu wm/wm wm/logon
